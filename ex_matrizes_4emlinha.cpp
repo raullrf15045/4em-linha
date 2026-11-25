@@ -14,14 +14,10 @@ bool colocaPecaTabuleiro(string peca, int coluna, string arr[LINHAS][COLUNAS]);
 bool tabuleiroCheio(string arr[LINHAS][COLUNAS]);
 bool ganhouJogo(int &quemGanhou, string arr[LINHAS][COLUNAS]);
 
-
 int main() {
     string tabuleiro[LINHAS][COLUNAS];
-    int quemJoga=1; // 1-X -1º jogar // 2-O -2ºjogar !
-    int quemGanhou=0;
-    int colunaJogar = 0;
-    bool jogou = false;
-    //int jogador = 1;
+    int quemJoga = 1;   // 1 = X, 2 = O
+    int quemGanhou = 0;
     string peca;
 
     preencheTabuleiro(tabuleiro);
@@ -31,23 +27,33 @@ int main() {
         if (quemJoga == 1) {
             peca = "X";
             cout << "\nJogador 1 (X)";
-            cin >> peca;
         } else {
             peca = "O";
             cout << "\nJogador 2 (O)";
-            cin >> peca;
         }
-        int coluna = pedePecaJogador();
 
-        if (quemGanhou != 0) {
+        int colunaJogar;
+        bool jogou = false;
+        //este while vai continuar a pedir coluna ate peca ser colocada
+        while (!jogou) {
+            colunaJogar = pedePecaJogador();
+            jogou = colocaPecaTabuleiro(peca, colunaJogar, tabuleiro);
+            if (!jogou) {
+                cout << "Coluna invalida ou cheia! Tenta outra.\n";
+            }
+        }
+            //vai tar sempre a alternar a peca (jogador)
+        quemJoga = (quemJoga == 1) ? 2 : 1;
+
+    } while (!ganhouJogo(quemGanhou, tabuleiro) && !tabuleiroCheio(tabuleiro));
+
+    mostraTabuleiro(tabuleiro);
+
+    if (quemGanhou != 0) {
         cout << "\nParabens! O jogador " << quemGanhou << " ganhou!\n";
     } else {
         cout << "\nO jogo terminou empatado!\n";
     }
-
-        colunaJogar = pedePecaJogador();
-        jogou = colocaPecaTabuleiro("X", colunaJogar, tabuleiro);
-    } while (!ganhouJogo(quemGanhou, tabuleiro) && !tabuleiroCheio(tabuleiro));
 
     /*tabuleiro[0][1] = "s";
     mostraTabuleiro(tabuleiro);
@@ -90,22 +96,23 @@ void mostraTabuleiro(string arr[LINHAS][COLUNAS]) {
 }
 
 int pedePecaJogador() {
-     int coluna;
-
+    int coluna;
     cout << "\nEscolhe uma coluna (1-" << COLUNAS << "): ";
 
-    while (!(cin >> coluna)) {
-        cout << "Isso nao e um numero. Escolhe uma coluna (1-" << COLUNAS << "): ";
+    while (!(cin >> coluna) || coluna < 1 || coluna > COLUNAS) {
+        cout << "Entrada invalida. Escolhe uma coluna (1-" << COLUNAS << "): ";
     }
-
     return coluna;
 }
 
 bool colocaPecaTabuleiro(string peca, int coluna, string arr[LINHAS][COLUNAS]) {
-    for (int i = 0; i >= 0; i++) {
-        if (arr[i][coluna] == " ") {
-            arr[i][coluna] = peca;
-            break;
+    // o jogador introduz um 1-9 e o array 0-8
+    int col = coluna - 1;
+
+    for (int i = LINHAS - 1; i >= 0; i--) {
+        if (arr[i][col] == " ") {
+            arr[i][col] = peca;
+            return true;
         }
     }
     return false;
@@ -114,30 +121,35 @@ bool colocaPecaTabuleiro(string peca, int coluna, string arr[LINHAS][COLUNAS]) {
 bool tabuleiroCheio(string arr[LINHAS][COLUNAS]) {
     for (int j = 0; j < COLUNAS; j++) {
         if (arr[0][j] == " ") {
-            return true;
+            return false;
         }
     }
+    return true;
 }
 
 bool ganhouJogo(int &quemGanhou, string arr[LINHAS][COLUNAS]) {
+    //estes for vao ser usados para verficiar todas as possiveis formas de ganhar
     for (int i = 0; i < LINHAS; i++) {
         for (int j = 0; j < COLUNAS; j++) {
-
-            if (arr[i][j] == " ") {
-                continue;
-            }
-
             string peca = arr[i][j];
-            bool ganhou = false;
-
-
+            if (peca == " ") continue;
+            //linhas horizontasi
+            if (j + 3 < COLUNAS &&
+                arr[i][j+1] == peca &&
+                arr[i][j+2] == peca &&
+                arr[i][j+3] == peca) {
+                quemGanhou = (peca == "X") ? 1 : 2;
+                return true;
+            }
+            //linhas verticais
+            if (i + 3 < LINHAS &&
+                arr[i+1][j] == peca &&
+                arr[i+2][j] == peca &&
+                arr[i+3][j] == peca) {
+                quemGanhou = (peca == "X") ? 1 : 2;
+                return true;
+            }
         }
     }
-
     return false;
 }
-
-
-
-
-
